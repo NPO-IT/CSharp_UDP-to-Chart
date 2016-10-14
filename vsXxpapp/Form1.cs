@@ -12,12 +12,12 @@ namespace vsXxpapp
     public partial class Form1 : Form
     {
         int HISTO_MIN = 0;
-        int HISTO_YMAX = 1024;
+        int HISTO_YMAX = 256;
         int HISTO_XMAX = 31;
         int HISTO_YINT = 32;
         int HISTO_XINT = 1;
         int GRAPH_MIN = 0;
-        int GRAPH_YMAX = 1024;
+        int GRAPH_YMAX = 256;
         int GRAPH_XMAX = 1023;
         int GRAPH_YINT = 32;
 
@@ -33,7 +33,9 @@ namespace vsXxpapp
         int graphicStep = 0;
         int packReceived = 0;
         string mode = "label";
-        private List<byte[]> bigDataIn = new List<byte[]>();
+        bool isLabelRAW = true;
+        private List<byte[]> rawDataIn = new List<byte[]>();
+        private int[] hexDataIn = new int[512];
 
         public void serverThread()
         {
@@ -65,9 +67,8 @@ namespace vsXxpapp
                             packReceived = receiveBytes[0];
                         }
                         if (receiveBytes.Length > 0)
-                            // searching for markers in second bytes
-                            lock (bigDataIn)
-                                bigDataIn.Add(receiveBytes);
+                            lock (rawDataIn)
+                                rawDataIn.Add(receiveBytes);
                     }
                     else if (mode == "lcm")
                     {
@@ -195,51 +196,67 @@ namespace vsXxpapp
         {
             byte[][] data;
             int[] graphicEnum = new int[1024];
-            int[] slice = new int[32];
+            //short* pointer;
 
-            lock (bigDataIn)
+            lock (rawDataIn)
             {
-                data = bigDataIn.ToArray();
-                bigDataIn.Clear();
+                data = rawDataIn.ToArray();
+                rawDataIn.Clear();
             }
             if (data.Length == 0)
                 return;
 
             if (mode == "label")
             {
-                if (graphicUpd)
+                if (isLabelRAW)
                 {
-                    if (graphicOn)
+                    int[] slice = new int[32];
+                    foreach (byte[] item in data)
                     {
-                        foreach (byte[] item in data)
-                        {
-                            for (int i = 0; i < 32; i++)
-                                graphicData[i + (graphicStep * 32)] = item[i * 32 + graphicChan + 1];
-                            graphicStep++;
-                            if (graphicStep == 32)
+                        if (graphicUpd)
+                            if (graphicOn)
                             {
-                                graphicStep = 0;
+                                for (int i = 0; i < 32; i++)
+                                    graphicData[i + (graphicStep << 5)] = item[i * 32 + graphicChan + 1];
+                                graphicStep++;
+                                if (graphicStep == 32)
+                                    graphicStep = 0;
+                                chartGraphic.Series["DataGraphic"].Points.DataBindXY(graphicEnum, graphicData);
                             }
-                            chartGraphic.Series["DataGraphic"].Points.DataBindXY(graphicEnum, graphicData);
-                        }
+                        for (int i = 0; i < 32; i++)
+                            slice[i] = item[i + histogramArrayStep *32 + 1];
+                        
                     }
                     graphicUpd = false;
-                }
-                foreach (byte[] item in data)
-                    for (int i = 0; i < 32; i++)
-                    {
-                        slice[i] = item[i + 32 * histogramArrayStep + 1];
-                    }
-                histogramArrayStep++;
-                if (histogramArrayStep == 32) histogramArrayStep = 0;
 
-                chartHistogram.Series["DataHistogram"].Points.Clear();
-                for (int i = 0; i < HISTO_XMAX+1; i++)
+                    histogramArrayStep++;
+                    if (histogramArrayStep == 32) histogramArrayStep = 0;
+                    chartHistogram.Series["DataHistogram"].Points.Clear();
+                    for (int i = 0; i < HISTO_XMAX + 1; i++)
+                        chartHistogram.Series["DataHistogram"].Points.AddXY(i, slice[i]);
+                }
+                else
                 {
-                    chartHistogram.Series["DataHistogram"].Points.AddXY(i, slice[i]);//DataBindXY(histogramEnum, slice); // вывод на чарт собранного массива
+                    int[] slice = new int[16];
+                    foreach (byte[] item in data)
+                    {
+                        for (int i = 0; i < 16; i++)
+                            slice[i] = item[i << 1 + histogramArrayStep * 32 + 2] + (item[i << 1 + histogramArrayStep * 32 + 1] << 8);
+                        if (graphicUpd)
+                            if (graphicOn)
+                            {
+
+                            }
+                    }
+                    histogramArrayStep++;
+                    if (histogramArrayStep == 32) histogramArrayStep = 0;
+                    chartHistogram.Series["DataHistogram"].Points.Clear();
+                    for (int i = 0; i < HISTO_XMAX + 1; i++)
+                        chartHistogram.Series["DataHistogram"].Points.AddXY(i, slice[i]);
+
                 }
             }
-            else if (mode == "lcm")
+/*            else if (mode == "lcm")
             {
                 foreach (byte[] item in data)
                     for (int i = 0; i < 32; i++)
@@ -253,7 +270,7 @@ namespace vsXxpapp
                 {
                     chartHistogram.Series["DataHistogram"].Points.AddXY(i, slice[i]);//DataBindXY(histogramEnum, slice); // вывод на чарт собранного массива
                 }
-            }
+            }*/
         }
 
         private void chartHistogram_CursorPositionChanged(object sender, System.Windows.Forms.DataVisualization.Charting.CursorEventArgs e)
@@ -267,13 +284,11 @@ namespace vsXxpapp
                 if (graphicChan == Convert.ToInt32(pt.XValue) && (graphicOn))
                 {
                     graphicOn = false;
-                    tmrHisto.Interval = 100;
                     tssLblStatus.Text = String.Format("Последнее сообщение: Останавливаю вывод на график {0}-го канала", graphicChan);
                 }
                 else
                 {
                     graphicOn = true;
-                    tmrHisto.Interval = 50;
                     graphicChan = Convert.ToInt32(pt.XValue);
                     tssLblStatus.Text = String.Format("Последнее сообщение: Вывожу на график {0}-й канал", graphicChan);
                 }
@@ -313,17 +328,6 @@ namespace vsXxpapp
             Chart_Init();
         }
 
-        private void tsmiLabel_Click(object sender, EventArgs e)
-        {
-            mode = "label";
-            tssLblMode.Text = "Режим: Метка";
-            tsmiLCM.CheckState = CheckState.Unchecked;
-            tsmiLCM.Checked = false;
-            tbEthPort.Text = "2016";
-            HISTO_XMAX = 23;
-            Chart_Init();
-        }
-
         private void chartGraphic_CursorPositionChanged(object sender, CursorEventArgs e)
         {
             try
@@ -335,6 +339,32 @@ namespace vsXxpapp
             catch
             {
             }
+        }
+
+        private void tsmiLabelRAW_Click(object sender, EventArgs e)
+        {
+            mode = "label";
+            isLabelRAW = true;
+            tssLblMode.Text = "Режим: Метка";
+            tsmiLCM.CheckState = CheckState.Unchecked;
+            tsmiLCM.Checked = false;
+            tbEthPort.Text = "2016";
+            HISTO_YMAX = 256;
+            HISTO_XMAX = 31;
+            Chart_Init();
+        }
+
+        private void tsmiLabelFix_Click(object sender, EventArgs e)
+        {
+            mode = "label";
+            isLabelRAW = false;
+            tssLblMode.Text = "Режим: Метка";
+            tsmiLCM.CheckState = CheckState.Unchecked;
+            tsmiLCM.Checked = false;
+            tbEthPort.Text = "2016";
+            HISTO_YMAX = 1024;
+            HISTO_XMAX = 15;
+            Chart_Init();
         }
     }
 }

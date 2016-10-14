@@ -55,6 +55,8 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLabel = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiLabelRAW = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiLabelFix = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiLCM = new System.Windows.Forms.ToolStripMenuItem();
             this.tbGraphicValue = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -146,9 +148,9 @@
             // 
             // tssLblMode
             // 
-            this.tssLblMode.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
-                        | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
-                        | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+            this.tssLblMode.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
             this.tssLblMode.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
             this.tssLblMode.Name = "tssLblMode";
             this.tssLblMode.Size = new System.Drawing.Size(89, 19);
@@ -156,9 +158,9 @@
             // 
             // tssLblStatus
             // 
-            this.tssLblStatus.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
-                        | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
-                        | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+            this.tssLblStatus.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Right) 
+            | System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
             this.tssLblStatus.BorderStyle = System.Windows.Forms.Border3DStyle.SunkenInner;
             this.tssLblStatus.Name = "tssLblStatus";
             this.tssLblStatus.Size = new System.Drawing.Size(274, 19);
@@ -213,15 +215,31 @@
             // 
             // tsmiLabel
             // 
+            this.tsmiLabel.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiLabelRAW,
+            this.tsmiLabelFix});
             this.tsmiLabel.Name = "tsmiLabel";
-            this.tsmiLabel.Size = new System.Drawing.Size(108, 22);
+            this.tsmiLabel.Size = new System.Drawing.Size(152, 22);
             this.tsmiLabel.Text = "Метка";
-            this.tsmiLabel.Click += new System.EventHandler(this.tsmiLabel_Click);
+            // 
+            // tsmiLabelRAW
+            // 
+            this.tsmiLabelRAW.Name = "tsmiLabelRAW";
+            this.tsmiLabelRAW.Size = new System.Drawing.Size(182, 22);
+            this.tsmiLabelRAW.Text = "Сырые данные";
+            this.tsmiLabelRAW.Click += new System.EventHandler(this.tsmiLabelRAW_Click);
+            // 
+            // tsmiLabelFix
+            // 
+            this.tsmiLabelFix.Name = "tsmiLabelFix";
+            this.tsmiLabelFix.Size = new System.Drawing.Size(182, 22);
+            this.tsmiLabelFix.Text = "Собранные данные";
+            this.tsmiLabelFix.Click += new System.EventHandler(this.tsmiLabelFix_Click);
             // 
             // tsmiLCM
             // 
             this.tsmiLCM.Name = "tsmiLCM";
-            this.tsmiLCM.Size = new System.Drawing.Size(108, 22);
+            this.tsmiLCM.Size = new System.Drawing.Size(152, 22);
             this.tsmiLCM.Text = "МЛК";
             this.tsmiLCM.Click += new System.EventHandler(this.tsmiLCM_Click);
             // 
@@ -244,11 +262,11 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(1074, 231);
+            this.label2.Location = new System.Drawing.Point(1048, 231);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(56, 13);
+            this.label2.Size = new System.Drawing.Size(82, 13);
             this.label2.TabIndex = 10;
-            this.label2.Text = "Потеряно";
+            this.label2.Text = "Сбоев приёма:";
             // 
             // label3
             // 
@@ -325,6 +343,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ToolStripMenuItem tsmiLabelRAW;
+        private System.Windows.Forms.ToolStripMenuItem tsmiLabelFix;
     }
 }
 
