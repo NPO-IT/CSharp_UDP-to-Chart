@@ -25,7 +25,6 @@ namespace vsXxpapp
         public bool _serverWork = true;
         int[] histogramData = new int[32];
         int[] graphicData = new int[1024];
-        //int[] bigDataIn = new int[1024];
         int histogramArrayStep = 0;
         bool graphicOn = false;
         bool graphicUpd = false;
@@ -35,7 +34,6 @@ namespace vsXxpapp
         string mode = "label";
         bool isLabelRAW = true;
         private List<byte[]> rawDataIn = new List<byte[]>();
-        private int[] hexDataIn = new int[512];
 
         public void serverThread()
         {
@@ -237,11 +235,14 @@ namespace vsXxpapp
                 }
                 else
                 {
-                    int[] slice = new int[16];
                     foreach (byte[] item in data)
                     {
-                        for (int i = 0; i < 16; i++)
-                            slice[i] = item[i << 1 + histogramArrayStep * 32 + 2] + (item[i << 1 + histogramArrayStep * 32 + 1] << 8);
+                        // this is what i should try
+                        short[] sdata = new short[512];
+                        Buffer.BlockCopy(item, 1, sdata, 0, item.Length-1);
+
+//                        for (int i = 0; i < 16; i++)
+//                            slice[i] = item[i << 1 + histogramArrayStep * 32 + 2] + (item[i << 1 + histogramArrayStep * 32 + 1] << 8);
                         if (graphicUpd)
                             if (graphicOn)
                             {
